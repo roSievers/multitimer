@@ -6,7 +6,7 @@ import Update
 import Time
 import Html
 
--- sorry fuer den unsinnigen kommentar
+
 main : Program Never Model Msg
 main =
     Html.program
