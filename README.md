@@ -1,2 +1,3 @@
-# ru-conjugate
-Simple trainer for russion conjugation
+# Multitimer
+
+A boardgame timer for more than two players.
