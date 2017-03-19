@@ -5,6 +5,7 @@ import View
 import Update
 import Time
 import Html
+import Return exposing (Return, singleton)
 
 
 main : Program Never Model Msg
@@ -17,14 +18,20 @@ main =
         }
 
 
-init : ( Model, Cmd Msg )
+init : Return a Model
 init =
-    ( { active_player = Player "Jojo" 600 Nothing
-      , buffer_time = 120
-      , num_passed = 0
-      , players = dummyPlayers
-      , paused = True
-      }
+    singleton (Setup { player_names = [], name_input = "" })
+
+
+old_init : ( Model, Cmd Msg )
+old_init =
+    ( Ingame
+        { active_player = Player "Jojo" 600 Nothing
+        , buffer_time = 120
+        , num_passed = 0
+        , players = dummyPlayers
+        , paused = True
+        }
     , Cmd.none
     )
 
@@ -44,7 +51,12 @@ dummyPlayers =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    if model.paused then
-        Sub.none
-    else
-        Time.every Time.second (\_ -> TickDown)
+    case model of
+        Ingame gameModel ->
+            if gameModel.paused then
+                Sub.none
+            else
+                Time.every Time.second (\_ -> TickDown)
+
+        _ ->
+            Sub.none

@@ -1,13 +1,40 @@
 module View exposing (page)
 
 import Types exposing (..)
-import Html exposing (Html, div, text, input, button, li, br, ul, span)
-import Html.Attributes exposing (style)
+import Html exposing (Html, div, text, input, button, li, br, ul, span, h1)
+import Html.Attributes exposing (style, value)
 import Html.Events exposing (onInput, onClick)
 
 
 page : Model -> Html Msg
 page model =
+    case model of
+        Ingame gameModel ->
+            game gameModel
+
+        Setup setupModel ->
+            setup setupModel
+
+
+setup : SetupModel -> Html Msg
+setup model =
+    div []
+        [ h1 [] [ text "Timer Setup" ]
+        , ul [] (List.map addedPlayer model.player_names)
+        , input [ value model.name_input, onInput NameInput ] []
+        , button [ onClick SubmitName ] [ text "Hinzufügen" ]
+        , br [] []
+        , button [ onClick StartGame ] [ text "Timer starten" ]
+        ]
+
+
+addedPlayer : String -> Html Msg
+addedPlayer name =
+    li [] [ text name ]
+
+
+game : GameModel -> Html Msg
+game model =
     div []
         [ pause model
         , activePlayer model
@@ -15,7 +42,7 @@ page model =
         ]
 
 
-pause : Model -> Html Msg
+pause : GameModel -> Html Msg
 pause model =
     if model.paused then
         button [ onClick (Pause False) ] [ text "Fortfahren" ]
@@ -23,7 +50,7 @@ pause model =
         button [ onClick (Pause True) ] [ text "Pausieren" ]
 
 
-activePlayer : Model -> Html Msg
+activePlayer : GameModel -> Html Msg
 activePlayer model =
     div []
         [ text model.active_player.name
@@ -35,7 +62,7 @@ activePlayer model =
         ]
 
 
-endTurnButton : Model -> Html Msg
+endTurnButton : GameModel -> Html Msg
 endTurnButton model =
     if model.paused then
         div []

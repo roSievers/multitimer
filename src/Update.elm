@@ -6,6 +6,54 @@ import Return exposing (Return, singleton)
 
 update : Msg -> Model -> Return Msg Model
 update msg model =
+    case model of
+        Ingame gameModel ->
+            updateGame msg gameModel |> Return.map Ingame
+
+        Setup setupModel ->
+            updateSetup msg setupModel
+
+
+updateSetup : Msg -> SetupModel -> Return Msg Model
+updateSetup msg model =
+    case msg of
+        NameInput new_name ->
+            Setup { model | name_input = new_name }
+                |> singleton
+
+        SubmitName ->
+            Setup { model | name_input = "", player_names = model.player_names ++ [ model.name_input ] }
+                |> singleton
+
+        StartGame ->
+            let
+                make_player name =
+                    Player name 600 Nothing
+
+                all_players =
+                    List.map make_player model.player_names
+
+                active_player =
+                    List.head all_players |> unsaveUnwrap
+
+                players =
+                    List.tail all_players |> unsaveUnwrap
+            in
+                Ingame
+                    { active_player = active_player
+                    , buffer_time = 120
+                    , num_passed = 0
+                    , players = players
+                    , paused = True
+                    }
+                    |> singleton
+
+        _ ->
+            singleton (Setup model)
+
+
+updateGame : Msg -> GameModel -> Return Msg GameModel
+updateGame msg model =
     case msg of
         EndTurn ->
             singleton (endTurn model)
@@ -19,13 +67,16 @@ update msg model =
         Pause pauseState ->
             singleton (setPaused pauseState model)
 
+        _ ->
+            singleton model
 
-setPaused : Bool -> Model -> Model
+
+setPaused : Bool -> GameModel -> GameModel
 setPaused pauseState model =
     { model | paused = pauseState }
 
 
-tickDown : Model -> Model
+tickDown : GameModel -> GameModel
 tickDown model =
     let
         active_player =
@@ -41,7 +92,7 @@ tickDown model =
             endTurn model
 
 
-endTurn : Model -> Model
+endTurn : GameModel -> GameModel
 endTurn model =
     let
         players =
@@ -57,7 +108,7 @@ endTurn model =
         { model | buffer_time = 120, players = players, active_player = active_player }
 
 
-updatePass : Model -> Model
+updatePass : GameModel -> GameModel
 updatePass model =
     let
         old_active_player =
@@ -75,7 +126,7 @@ updatePass model =
             endSuperturn new_model
 
 
-endSuperturn : Model -> Model
+endSuperturn : GameModel -> GameModel
 endSuperturn model =
     let
         all_players =
