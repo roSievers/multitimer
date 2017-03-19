@@ -3,7 +3,6 @@ module Main exposing (..)
 import Types exposing (..)
 import View
 import Update
-import Return
 import Time
 import Html
 

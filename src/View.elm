@@ -1,7 +1,7 @@
 module View exposing (page)
 
 import Types exposing (..)
-import Html exposing (Html, div, text, input, button, li, br, h1, span)
+import Html exposing (Html, div, text, input, button, li, br, ul, span)
 import Html.Attributes exposing (style)
 import Html.Events exposing (onInput, onClick)
 
@@ -9,34 +9,34 @@ import Html.Events exposing (onInput, onClick)
 page : Model -> Html Msg
 page model =
     div []
-        [ viewPause model
-        , viewActive model
-        , Html.ul [] (List.map viewPlayer model.players)
+        [ pause model
+        , activePlayer model
+        , ul [] (List.map waitingPlayer model.players)
         ]
 
 
-viewPause : Model -> Html Msg
-viewPause model =
+pause : Model -> Html Msg
+pause model =
     if model.paused then
         button [ onClick (Pause False) ] [ text "Fortfahren" ]
     else
         button [ onClick (Pause True) ] [ text "Pausieren" ]
 
 
-viewActive : Model -> Html Msg
-viewActive model =
+activePlayer : Model -> Html Msg
+activePlayer model =
     div []
         [ text model.active_player.name
         , br [] []
-        , text (viewTime model.buffer_time)
+        , text (timeFormat model.buffer_time)
         , text "#"
-        , text (viewTime model.active_player.time_left)
-        , viewEndTurnButton model
+        , text (timeFormat model.active_player.time_left)
+        , endTurnButton model
         ]
 
 
-viewEndTurnButton : Model -> Html Msg
-viewEndTurnButton model =
+endTurnButton : Model -> Html Msg
+endTurnButton model =
     if model.paused then
         div []
             [ button [ Html.Attributes.disabled True ] [ text "Passen" ]
@@ -54,8 +54,8 @@ viewEndTurnButton model =
             ]
 
 
-viewPlayer : Player -> Html a
-viewPlayer player =
+waitingPlayer : Player -> Html a
+waitingPlayer player =
     let
         color =
             if player.passed == Nothing then
@@ -69,12 +69,12 @@ viewPlayer player =
         li [ attribute ]
             [ text player.name
             , text " -> "
-            , text (viewTime player.time_left)
+            , text (timeFormat player.time_left)
             ]
 
 
-viewTime : Int -> String
-viewTime seconds =
+timeFormat : Int -> String
+timeFormat seconds =
     let
         minutes =
             seconds // 60

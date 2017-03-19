@@ -1,31 +1,32 @@
 module Update exposing (update)
 
 import Types exposing (..)
+import Return exposing (Return, singleton)
 
 
-update : Msg -> Model -> ( Model, Cmd Msg )
+update : Msg -> Model -> Return Msg Model
 update msg model =
     case msg of
         EndTurn ->
-            ( updateEndTurn model, Cmd.none )
+            singleton (endTurn model)
 
         Pass ->
-            ( updatePass model, Cmd.none )
+            singleton (updatePass model)
 
         TickDown ->
-            ( updateTickDown model, Cmd.none )
+            singleton (tickDown model)
 
         Pause pauseState ->
-            ( updatePause pauseState model, Cmd.none )
+            singleton (setPaused pauseState model)
 
 
-updatePause : Bool -> Model -> Model
-updatePause pauseState model =
+setPaused : Bool -> Model -> Model
+setPaused pauseState model =
     { model | paused = pauseState }
 
 
-updateTickDown : Model -> Model
-updateTickDown model =
+tickDown : Model -> Model
+tickDown model =
     let
         active_player =
             model.active_player
@@ -37,11 +38,11 @@ updateTickDown model =
         else if active_player.passed == Nothing then
             updatePass model
         else
-            updateEndTurn model
+            endTurn model
 
 
-updateEndTurn : Model -> Model
-updateEndTurn model =
+endTurn : Model -> Model
+endTurn model =
     let
         players =
             model.players
@@ -69,13 +70,13 @@ updatePass model =
             { model | active_player = new_active_player, num_passed = model.num_passed + 1 }
     in
         if model.num_passed < List.length model.players then
-            updateEndTurn new_model
+            endTurn new_model
         else
-            updateReset new_model
+            endSuperturn new_model
 
 
-updateReset : Model -> Model
-updateReset model =
+endSuperturn : Model -> Model
+endSuperturn model =
     let
         all_players =
             model.active_player
