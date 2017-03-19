@@ -1,2 +1,2 @@
-# multitimer
-Chess clock distributed over multiple Smartphones
+# ru-conjugate
+Simple trainer for russion conjugation
