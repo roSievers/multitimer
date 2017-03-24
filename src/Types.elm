@@ -7,8 +7,9 @@ type Model
 
 
 type alias SetupModel =
-    { player_names : List String
-    , name_input : String
+    { name_input : String
+    , time_left : String
+    , config : Config
     }
 
 
@@ -18,7 +19,35 @@ type alias GameModel =
     , num_passed : Int
     , players : List Player
     , paused : Bool
+    , config : Config
     }
+
+
+type alias Config =
+    { buffer_time_initial : Int
+    , keep_buffer : Bool
+    , passing_allowed : Bool
+    , passed_playing : Bool
+    , passed_playing_time : Int
+    , rearrangement : Rearrangement
+    }
+
+
+initialConfig : Config
+initialConfig =
+    { buffer_time_initial = 120
+    , keep_buffer = False
+    , passing_allowed = True
+    , passed_playing = False
+    , passed_playing_time = 120
+    , rearrangement = StartPlayer
+    }
+
+
+type Rearrangement
+    = Static
+    | StartPlayer
+    | PassOrder
 
 
 type alias Player =
@@ -34,5 +63,11 @@ type Msg
     | TickDown
     | Pause Bool
     | NameInput String
-    | SubmitName
-    | StartGame
+    | BufferTimeInput String
+    | TimeLeftInput String
+    | StartGame GameModel
+    | PassInput Bool
+    | PassedPlayInput Bool
+    | PassedPlayTime String
+    | RearrangementInput Rearrangement
+    | KeepBufferInput Bool

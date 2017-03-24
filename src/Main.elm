@@ -20,33 +20,13 @@ main =
 
 init : Return a Model
 init =
-    singleton (Setup { player_names = [], name_input = "" })
-
-
-old_init : ( Model, Cmd Msg )
-old_init =
-    ( Ingame
-        { active_player = Player "Jojo" 600 Nothing
-        , buffer_time = 120
-        , num_passed = 0
-        , players = dummyPlayers
-        , paused = True
-        }
-    , Cmd.none
-    )
-
-
-dummyPlayers : List Player
-dummyPlayers =
-    let
-        time =
-            10 * 60
-    in
-        [ Player "Theo" time Nothing
-        , Player "Rolf" time Nothing
-        , Player "ReRe" time Nothing
-        , Player "Sara" time Nothing
-        ]
+    singleton
+        (Setup
+            { name_input = ""
+            , time_left = "600"
+            , config = initialConfig
+            }
+        )
 
 
 subscriptions : Model -> Sub Msg

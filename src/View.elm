@@ -1,9 +1,11 @@
 module View exposing (page)
 
 import Types exposing (..)
-import Html exposing (Html, div, text, input, button, li, br, ul, span, h1)
-import Html.Attributes exposing (style, value)
+import Parser
+import Html exposing (Html, div, text, input, button, li, br, ul, span, h1, p, label)
+import Html.Attributes exposing (style, value, disabled, type_, checked)
 import Html.Events exposing (onInput, onClick)
+import Update
 
 
 page : Model -> Html Msg
@@ -20,17 +22,59 @@ setup : SetupModel -> Html Msg
 setup model =
     div []
         [ h1 [] [ text "Timer Setup" ]
-        , ul [] (List.map addedPlayer model.player_names)
         , input [ value model.name_input, onInput NameInput ] []
-        , button [ onClick SubmitName ] [ text "Hinzufügen" ]
+        , playerList model.name_input
         , br [] []
-        , button [ onClick StartGame ] [ text "Timer starten" ]
+        , text "Zeit pro Zug"
+        , input [ value (toString model.config.buffer_time_initial), onInput BufferTimeInput ] []
+        , checkbox "Übrige Zeit gutschreiben" model.config.keep_buffer KeepBufferInput
+        , br [] []
+        , text "Bedenkzeit"
+        , input [ value model.time_left, onInput TimeLeftInput ] []
+        , br [] []
+        , checkbox "Passen möglich" model.config.passing_allowed PassInput
+        , checkbox "Nach Passen reagieren" model.config.passed_playing PassedPlayInput
+        , text "Verminderte Zeit"
+        , input [ value (toString model.config.passed_playing_time), disabled (not (model.config.passed_playing && model.config.passing_allowed)), onInput PassedPlayTime ] []
+        , br [] []
+        , br [] []
+        , startGameButton model
         ]
 
 
-addedPlayer : String -> Html Msg
-addedPlayer name =
-    li [] [ text name ]
+checkbox : String -> Bool -> (Bool -> Msg) -> Html Msg
+checkbox caption current message =
+    label []
+        [ input [ type_ "checkbox", onClick (message (not current)), checked current ] []
+        , text caption
+        ]
+
+
+playerList : String -> Html a
+playerList name_input =
+    case Parser.playerList name_input of
+        Ok names ->
+            ul [] (List.map (\name -> li [] [ text name ]) names)
+
+        Err errorText ->
+            p [ style [ ( "color", "red" ) ] ] [ text errorText ]
+
+
+startGameButton : SetupModel -> Html Msg
+startGameButton setupModel =
+    case Update.setupGame setupModel of
+        Ok gameModel ->
+            button [ onClick (StartGame gameModel) ] [ text "Timer starten" ]
+
+        Err errorText ->
+            div []
+                [ button [ disabled True ] [ text "Timer starten" ]
+                , p [ style [ ( "color", "red" ) ] ] [ text errorText ]
+                ]
+
+
+
+-- Game View
 
 
 game : GameModel -> Html Msg
@@ -66,17 +110,17 @@ endTurnButton : GameModel -> Html Msg
 endTurnButton model =
     if model.paused then
         div []
-            [ button [ Html.Attributes.disabled True ] [ text "Passen" ]
-            , button [ Html.Attributes.disabled True ] [ text "Zug beenden" ]
+            [ button [ disabled True ] [ text "Passen" ]
+            , button [ disabled True ] [ text "Zug beenden" ]
             ]
     else if model.active_player.passed == Nothing then
         div []
-            [ button [ onClick Pass ] [ text "Passen" ]
+            [ button [ onClick Pass, disabled <| not model.config.passing_allowed ] [ text "Passen" ]
             , button [ onClick EndTurn ] [ text "Zug beenden" ]
             ]
     else
         div []
-            [ button [ Html.Attributes.disabled True ] [ text "Passen" ]
+            [ button [ disabled True ] [ text "Passen" ]
             , button [ onClick EndTurn ] [ text "Zug beenden" ]
             ]
 
