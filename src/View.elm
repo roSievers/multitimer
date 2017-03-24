@@ -30,7 +30,7 @@ setup model =
         , checkbox "Übrige Zeit gutschreiben" model.config.keep_buffer KeepBufferInput
         , br [] []
         , text "Bedenkzeit"
-        , input [ value model.time_left, onInput TimeLeftInput ] []
+        , input [ value (toString model.time_left), onInput TimeLeftInput ] []
         , br [] []
         , checkbox "Passen möglich" model.config.passing_allowed PassInput
         , checkbox "Nach Passen reagieren" model.config.passed_playing PassedPlayInput

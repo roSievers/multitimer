@@ -9,94 +9,63 @@ update : Msg -> Model -> Return Msg Model
 update msg model =
     case model of
         Ingame gameModel ->
-            updateGame msg gameModel |> Return.map Ingame
+            updateGame msg gameModel |> Ingame |> singleton
 
         Setup setupModel ->
-            updateSetup msg setupModel
+            updateSetup msg setupModel |> singleton
 
 
-updateSetup : Msg -> SetupModel -> Return Msg Model
+updateSetup : Msg -> SetupModel -> Model
 updateSetup msg model =
     case msg of
         NameInput new_name ->
             Setup { model | name_input = new_name }
-                |> singleton
 
+        TimeLeftInput time_left ->
+            case String.toInt time_left of
+                Ok seconds ->
+                    Setup { model | time_left = seconds }
+
+                Err _ ->
+                    Setup model
+
+        StartGame gameModel ->
+            Ingame gameModel
+
+        message ->
+            Setup { model | config = updateConfig message model.config }
+
+
+updateConfig : Msg -> Config -> Config
+updateConfig msg config =
+    case msg of
         BufferTimeInput buffer_time ->
             case String.toInt buffer_time of
                 Ok seconds ->
-                    let
-                        config =
-                            model.config
-
-                        new_config =
-                            { config | buffer_time_initial = seconds }
-                    in
-                        Setup { model | config = new_config }
-                            |> singleton
+                    { config | buffer_time_initial = seconds }
 
                 Err _ ->
-                    singleton <| Setup model
-
-        TimeLeftInput time_left ->
-            Setup { model | time_left = time_left }
-                |> singleton
+                    config
 
         KeepBufferInput value ->
-            let
-                config =
-                    model.config
-
-                new_config =
-                    { config | keep_buffer = value }
-            in
-                Setup { model | config = new_config }
-                    |> singleton
+            { config | keep_buffer = value }
 
         PassInput value ->
-            let
-                config =
-                    model.config
-
-                new_config =
-                    { config | passing_allowed = value }
-            in
-                Setup { model | config = new_config }
-                    |> singleton
+            { config | passing_allowed = value }
 
         PassedPlayInput value ->
-            let
-                config =
-                    model.config
-
-                new_config =
-                    { config | passed_playing = value }
-            in
-                Setup { model | config = new_config }
-                    |> singleton
+            { config | passed_playing = value }
 
         PassedPlayTime play_time ->
             case String.toInt play_time of
                 Ok seconds ->
-                    let
-                        config =
-                            model.config
-
-                        new_config =
-                            { config | passed_playing_time = seconds }
-                    in
-                        Setup { model | config = new_config }
-                            |> singleton
+                    { config | passed_playing_time = seconds }
 
                 Err _ ->
-                    singleton <| Setup model
-
-        StartGame gameModel ->
-            Ingame gameModel
-                |> singleton
+                    config
 
         _ ->
-            singleton (Setup model)
+            config
 
 
 setupGame : SetupModel -> Result String GameModel
@@ -115,10 +84,10 @@ setupGame setupModel =
             setupModel.config.buffer_time_initial
 
         time_left =
-            String.toInt setupModel.time_left
+            setupModel.time_left
     in
-        Result.map3
-            (\active_player players time_left ->
+        Result.map2
+            (\active_player players ->
                 { active_player = Player active_player time_left Nothing
                 , buffer_time = buffer_time
                 , num_passed = 0
@@ -129,26 +98,25 @@ setupGame setupModel =
             )
             active_player
             players
-            time_left
 
 
-updateGame : Msg -> GameModel -> Return Msg GameModel
+updateGame : Msg -> GameModel -> GameModel
 updateGame msg model =
     case msg of
         EndTurn ->
-            singleton (endTurn model)
+            endTurn model
 
         Pass ->
-            singleton (updatePass model)
+            updatePass model
 
         TickDown ->
-            singleton (tickDown model)
+            tickDown model
 
         Pause pauseState ->
-            singleton (setPaused pauseState model)
+            setPaused pauseState model
 
         _ ->
-            singleton model
+            model
 
 
 setPaused : Bool -> GameModel -> GameModel

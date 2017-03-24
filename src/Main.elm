@@ -23,7 +23,7 @@ init =
     singleton
         (Setup
             { name_input = ""
-            , time_left = "600"
+            , time_left = 600
             , config = initialConfig
             }
         )

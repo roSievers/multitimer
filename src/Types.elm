@@ -8,7 +8,7 @@ type Model
 
 type alias SetupModel =
     { name_input : String
-    , time_left : String
+    , time_left : Int
     , config : Config
     }
 
