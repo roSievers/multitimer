@@ -20,6 +20,7 @@ type alias GameModel =
     , players : List Player
     , paused : Bool
     , config : Config
+    , disabled_players : List Player
     }
 
 
@@ -54,6 +55,7 @@ type alias Player =
     { name : String
     , time_left : Int
     , passed : Maybe Int
+    , position : Int
     }
 
 

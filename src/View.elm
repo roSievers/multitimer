@@ -83,6 +83,9 @@ game model =
         [ pause model
         , activePlayer model
         , ul [] (List.map waitingPlayer model.players)
+        , br [] []
+        , text "passed players:"
+        , ul [] (List.map waitingPlayer model.disabled_players)
         ]
 
 

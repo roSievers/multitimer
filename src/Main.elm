@@ -17,7 +17,6 @@ main =
         , view = View.page
         }
 
-
 init : Return a Model
 init =
     singleton
