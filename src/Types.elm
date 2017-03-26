@@ -34,17 +34,6 @@ type alias Config =
     }
 
 
-initialConfig : Config
-initialConfig =
-    { buffer_time_initial = 120
-    , keep_buffer = False
-    , passing_allowed = True
-    , passed_playing = False
-    , passed_playing_time = 120
-    , rearrangement = StartPlayer
-    }
-
-
 type Rearrangement
     = Static
     | StartPlayer

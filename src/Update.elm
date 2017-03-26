@@ -144,6 +144,23 @@ tickDown model =
             endTurn model
 
 
+updatePass : GameModel -> GameModel
+updatePass model =
+    let
+        old_active_player =
+            model.active_player
+
+        new_active_player =
+            { old_active_player | passed = Just (model.num_passed + 1) }
+
+        new_model =
+            { model | active_player = new_active_player, num_passed = model.num_passed + 1 }
+    in
+        if model.num_passed < List.length model.players + List.length model.disabled_players then
+            endTurn new_model
+        else
+            endSuperturn new_model
+
 endTurn : GameModel -> GameModel
 endTurn model =
     model |> transferBuffer |> rotatePlayers
@@ -278,23 +295,6 @@ activateFromQueue model =
     in
         { model | active_player = active_player, players = players }
 
-
-updatePass : GameModel -> GameModel
-updatePass model =
-    let
-        old_active_player =
-            model.active_player
-
-        new_active_player =
-            { old_active_player | passed = Just (model.num_passed + 1) }
-
-        new_model =
-            { model | active_player = new_active_player, num_passed = model.num_passed + 1 }
-    in
-        if model.num_passed < List.length model.players + List.length model.disabled_players then
-            endTurn new_model
-        else
-            endSuperturn new_model
 
 
 unsaveUnwrap : Maybe a -> a
