@@ -17,11 +17,12 @@ main =
         , view = View.page
         }
 
+
 init : Return a Model
 init =
     singleton
         (Setup
-            { name_input = ""
+            { name_input = "Ada, Bert, Calvin, Dora"
             , time_left = 600
             , config = initialConfig
             }

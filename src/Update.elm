@@ -64,6 +64,9 @@ updateConfig msg config =
                 Err _ ->
                     config
 
+        RearrangementInput rearrangement ->
+            { config | rearrangement = rearrangement }
+
         _ ->
             config
 
@@ -91,8 +94,8 @@ setupGame setupModel =
                 { active_player = Player active_player time_left Nothing 1
                 , buffer_time = buffer_time
                 , num_passed = 0
-                , players = List.indexedMap (\i name -> Player name time_left Nothing (i+2)) players
-                , disabled_players =[]
+                , players = List.indexedMap (\i name -> Player name time_left Nothing (i + 2)) players
+                , disabled_players = []
                 , paused = True
                 , config = setupModel.config
                 }
@@ -169,97 +172,111 @@ transferBuffer gameModel =
 rearrangePlayers : GameModel -> GameModel
 rearrangePlayers model =
     let
-        playstyle= model.config.rearrangement
+        playstyle =
+            model.config.rearrangement
 
         firstPlayerWillStart list =
             (List.head list |> Maybe.andThen .passed)
-            ==Just 1
+                == Just 1
 
         all_players =
             case playstyle of
-            PassOrder ->
-                model.active_player
-                    :: model.players ++ model.disabled_players
-                    |> List.sortBy (.passed >> unsaveUnwrap)
-                    |> List.map (\p -> { p | passed = Nothing })
-            
-            Static  ->
-                model.active_player
-                    :: model.players ++ model.disabled_players
-                    |> List.sortBy (.position)
-                    |> List.map (\p -> { p | passed = Nothing })
-            
-            StartPlayer ->
-                model.active_player
-                    :: model.players ++ model.disabled_players
-                    |> List.sortBy (.position )
-                    |> repeatUntil rotateList firstPlayerWillStart
-                    |> List.map (\p -> { p | passed = Nothing })
-            
+                PassOrder ->
+                    model.active_player
+                        :: model.players
+                        ++ model.disabled_players
+                        |> List.sortBy (.passed >> unsaveUnwrap)
+                        |> List.map (\p -> { p | passed = Nothing })
+
+                Static ->
+                    model.active_player
+                        :: model.players
+                        ++ model.disabled_players
+                        |> List.sortBy (.position)
+                        |> List.map (\p -> { p | passed = Nothing })
+
+                StartPlayer ->
+                    model.active_player
+                        :: model.players
+                        ++ model.disabled_players
+                        |> List.sortBy (.position)
+                        |> repeatUntil rotateList firstPlayerWillStart
+                        |> List.map (\p -> { p | passed = Nothing })
+
         active_player =
             all_players |> List.head |> unsaveUnwrap
 
         players =
             all_players |> List.tail |> unsaveUnwrap
     in
-        { model | players = players, active_player = active_player, buffer_time = model.config.buffer_time_initial, disabled_players=[], num_passed = 0 }
+        { model | players = players, active_player = active_player, buffer_time = model.config.buffer_time_initial, disabled_players = [], num_passed = 0 }
 
 
-rotateList: List a -> List a
+rotateList : List a -> List a
 rotateList list =
     case list of
-        head::tail -> tail ++[head]
-        _ -> []
-    
+        head :: tail ->
+            tail ++ [ head ]
 
-repeatUntil: (a -> a) -> (a -> Bool) -> a -> a
-repeatUntil  f  oracle value =
-    if oracle value
-    then 
+        _ ->
+            []
+
+
+repeatUntil : (a -> a) -> (a -> Bool) -> a -> a
+repeatUntil f oracle value =
+    if oracle value then
         value
     else
         repeatUntil f oracle (f value)
-    
+
 
 rotatePlayers : GameModel -> GameModel
 rotatePlayers model =
     let
-        keep_playing = model.active_player.passed == Nothing || model.config.passed_playing
-    
-        removeActivePlayer = if keep_playing then queueActivePlayer else disableActivePlayer
+        keep_playing =
+            model.active_player.passed == Nothing || model.config.passed_playing
 
-
+        removeActivePlayer =
+            if keep_playing then
+                queueActivePlayer
+            else
+                disableActivePlayer
     in
         model |> removeActivePlayer |> activateFromQueue |> resetBufferTime
 
+
 resetBufferTime : GameModel -> GameModel
 resetBufferTime model =
-    let 
-        buffer_time= 
-            if model.active_player.passed == Nothing
-            then
+    let
+        buffer_time =
+            if model.active_player.passed == Nothing then
                 model.config.buffer_time_initial
             else
                 model.config.passed_playing_time
-    in 
-        {model | buffer_time = buffer_time}
+    in
+        { model | buffer_time = buffer_time }
+
 
 queueActivePlayer : GameModel -> GameModel
 queueActivePlayer model =
-    {model | players= model.players ++[model.active_player]}
+    { model | players = model.players ++ [ model.active_player ] }
+
 
 disableActivePlayer : GameModel -> GameModel
 disableActivePlayer model =
-    {model | disabled_players = model.disabled_players ++ [model.active_player]}
+    { model | disabled_players = model.disabled_players ++ [ model.active_player ] }
+
 
 activateFromQueue : GameModel -> GameModel
 activateFromQueue model =
     let
-        active_player = model.players |> List.head |> Maybe.withDefault model.active_player
-        players = model.players |> List.tail |> Maybe.withDefault []
-    in 
-        {model | active_player= active_player, players=players}
+        active_player =
+            model.players |> List.head |> Maybe.withDefault model.active_player
 
+        players =
+            model.players |> List.tail |> Maybe.withDefault []
+    in
+        { model | active_player = active_player, players = players }
 
 
 updatePass : GameModel -> GameModel
@@ -267,7 +284,7 @@ updatePass model =
     let
         old_active_player =
             model.active_player
-        
+
         new_active_player =
             { old_active_player | passed = Just (model.num_passed + 1) }
 

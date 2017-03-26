@@ -37,6 +37,7 @@ setup model =
         , text "Verminderte Zeit"
         , input [ value (toString model.config.passed_playing_time), disabled (not (model.config.passed_playing && model.config.passing_allowed)), onInput PassedPlayTime ] []
         , br [] []
+        , rearrangementChoice model.config.passing_allowed model.config.rearrangement
         , br [] []
         , startGameButton model
         ]
@@ -71,6 +72,25 @@ startGameButton setupModel =
                 [ button [ disabled True ] [ text "Timer starten" ]
                 , p [ style [ ( "color", "red" ) ] ] [ text errorText ]
                 ]
+
+
+rearrangementChoice : Bool -> Rearrangement -> Html Msg
+rearrangementChoice passing_allowed current =
+    div []
+        [ rearrangementButton passing_allowed current Static "Feste Spielreihenfolge"
+        , rearrangementButton passing_allowed current StartPlayer "Startspieler nach Passen"
+        , rearrangementButton passing_allowed current PassOrder "Komplett nach Passen"
+        ]
+
+
+rearrangementButton : Bool -> Rearrangement -> Rearrangement -> String -> Html Msg
+rearrangementButton passing_allowed current new caption =
+    if current == new then
+        button [ disabled (not passing_allowed) ]
+            [ text ("X " ++ caption) ]
+    else
+        button [ onClick (RearrangementInput new), disabled (not passing_allowed) ]
+            [ text ("O " ++ caption) ]
 
 
 
