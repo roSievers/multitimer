@@ -35,9 +35,10 @@ initialConfig =
     , keep_buffer = False
     , passing_allowed = True
     , passed_playing = False
-    , passed_playing_time = 120
+    , passed_playing_time = 60
     , rearrangement = StartPlayer
     }
+
 
 subscriptions : Model -> Sub Msg
 subscriptions model =

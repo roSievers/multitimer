@@ -161,6 +161,7 @@ updatePass model =
         else
             endSuperturn new_model
 
+
 endTurn : GameModel -> GameModel
 endTurn model =
     model |> transferBuffer |> rotatePlayers
@@ -294,7 +295,6 @@ activateFromQueue model =
             model.players |> List.tail |> Maybe.withDefault []
     in
         { model | active_player = active_player, players = players }
-
 
 
 unsaveUnwrap : Maybe a -> a
